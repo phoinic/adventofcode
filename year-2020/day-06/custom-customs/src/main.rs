@@ -25,9 +25,9 @@ fn main() {
             };
         } else {
             for ch in str.chars() {
-                match group.answers.get(&ch) {
-                    Some(val) => { group.answers.insert(ch, val + 1); },
-                    None      => { group.answers.insert(ch, 1); },
+                match &group.answers.get(&ch) {
+                    Some(&val) => { group.answers.insert(ch, val + 1); },
+                    None       => { group.answers.insert(ch, 1); },
                 }
             }
             group.members_count += 1;
