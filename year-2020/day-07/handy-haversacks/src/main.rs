@@ -28,6 +28,7 @@ fn count_children(bags_tree: &HashMap<String, HashMap<String, u32>>, bag: String
     }
     rv
 }
+
 fn main() {
     
     let mut bags_map: HashMap<String, Vec<String>> = HashMap::new();
