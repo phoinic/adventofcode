@@ -1,10 +1,10 @@
 static INPUT_DATA: &str = include_str!("input.txt");
 
 fn main() {
-    let input = INPUT_DATA.split("\n")
-        .map(|str| {
-            str.to_string().parse::<i64>().unwrap()
-        }).collect::<Vec<_>>();
+    let input = INPUT_DATA
+        .split("\n")
+        .map(|str| str.to_string().parse::<i64>().unwrap())
+        .collect::<Vec<_>>();
 
     let mut count = 0;
     let mut prev: Option<i64> = None;
