@@ -12,10 +12,10 @@ fn main() {
     let mut e_pos: i64 = 0;
     let mut n_pos: i64 = 0;
 
-    let mut e_pos2: i64 = 0;
-    let mut n_pos2: i64 = 0;
     let mut e_wp: i64 = 10;
     let mut n_wp: i64 = 1;
+    let mut e_pos2: i64 = 0;
+    let mut n_pos2: i64 = 0;
 
     for str in commands.iter() {
 
