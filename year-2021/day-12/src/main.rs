@@ -13,7 +13,7 @@ enum VisitLogic {
 #[derive(Debug)]
 struct CavesMap<'a> {
     map: HashMap<&'a str, Vec<&'a str>>,
-    pathes: Vec<Vec<&'a str>>,
+    paths: Vec<Vec<&'a str>>,
     visit_logic: VisitLogic,
 }
 
@@ -21,7 +21,7 @@ impl<'a> CavesMap<'a> {
     fn new() -> Self {
         CavesMap {
             map: HashMap::<&str, Vec<&str>>::new(),
-            pathes: vec![],
+            paths: vec![],
             visit_logic: VisitLogic::SmallOnce,
         }
     }
@@ -48,9 +48,9 @@ impl<'a> CavesMap<'a> {
         true
     }
 
-    fn build_pathes(&mut self, visit_logic: VisitLogic) {
+    fn build_paths(&mut self, visit_logic: VisitLogic) {
         self.visit_logic = visit_logic;
-        self.pathes = self.find_path("start", vec![], false);
+        self.paths = self.find_path("start", vec![], false);
     }
 
     fn find_path(
@@ -69,17 +69,17 @@ impl<'a> CavesMap<'a> {
                 .par_iter()
                 .map(|to_cave| {
                     let is_small = Self::cave_is_small(to_cave);
-                    let is_visisted = visited.contains(&to_cave);
+                    let is_visited = visited.contains(&to_cave);
                     if to_cave != &"start"
                         && (!is_small
-                            || !is_visisted
+                            || !is_visited
                             || (self.visit_logic == VisitLogic::OneSmallTwice
                                 && !has_small_visited))
                     {
                         self.find_path(
                             to_cave,
                             visited.clone(),
-                            has_small_visited || (is_small && is_visisted),
+                            has_small_visited || (is_small && is_visited),
                         )
                     } else {
                         vec![]
@@ -92,7 +92,7 @@ impl<'a> CavesMap<'a> {
     }
 
     fn get_pathes(&self) -> &Vec<Vec<&str>> {
-        &self.pathes
+        &self.paths
     }
 }
 
@@ -107,7 +107,7 @@ fn main() {
     }
 
     let tstamp = Instant::now();
-    caves_map.build_pathes(VisitLogic::SmallOnce);
+    caves_map.build_paths(VisitLogic::SmallOnce);
     println!(
         "Round 1: {} ({}ms)",
         caves_map.get_pathes().len(),
@@ -115,7 +115,7 @@ fn main() {
     );
 
     let tstamp = Instant::now();
-    caves_map.build_pathes(VisitLogic::OneSmallTwice);
+    caves_map.build_paths(VisitLogic::OneSmallTwice);
     println!(
         "Round 2: {} ({}ms)",
         caves_map.get_pathes().len(),
