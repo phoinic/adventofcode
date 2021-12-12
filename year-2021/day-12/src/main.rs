@@ -1,7 +1,6 @@
 static INPUT_DATA: &str = include_str!("input.txt");
 
 use rayon::prelude::*;
-use regex::Regex;
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -14,7 +13,6 @@ enum VisitLogic {
 #[derive(Debug)]
 struct CavesMap<'a> {
     map: HashMap<&'a str, Vec<&'a str>>,
-    small_caves: HashMap<&'a str, bool>,
     pathes: Vec<Vec<&'a str>>,
     visit_logic: VisitLogic,
 }
@@ -23,7 +21,6 @@ impl<'a> CavesMap<'a> {
     fn new() -> Self {
         CavesMap {
             map: HashMap::<&str, Vec<&str>>::new(),
-            small_caves: HashMap::<&str, bool>::new(),
             pathes: vec![],
             visit_logic: VisitLogic::SmallOnce,
         }
@@ -36,14 +33,6 @@ impl<'a> CavesMap<'a> {
         if !self.map.contains_key(to_cave) {
             self.map.insert(to_cave, vec![]);
         }
-        if !self.small_caves.contains_key(from_cave) {
-            self.small_caves
-                .insert(from_cave, Self::cave_is_small(from_cave));
-        }
-        if !self.small_caves.contains_key(to_cave) {
-            self.small_caves
-                .insert(to_cave, Self::cave_is_small(to_cave));
-        }
         self.map.get_mut(from_cave).unwrap().push(to_cave);
         if from_cave != "start" && to_cave != "end" {
             self.map.get_mut(to_cave).unwrap().push(from_cave);
@@ -51,8 +40,12 @@ impl<'a> CavesMap<'a> {
     }
 
     fn cave_is_small(cave: &str) -> bool {
-        let re = Regex::new("^[a-z]+$").unwrap();
-        re.is_match(cave)
+        for ch in cave.as_bytes() {
+            if !ch.is_ascii_lowercase() {
+                return false;
+            }
+        }
+        true
     }
 
     fn build_pathes(&mut self, visit_logic: VisitLogic) {
@@ -75,7 +68,7 @@ impl<'a> CavesMap<'a> {
             let new_pathes = tunnels
                 .par_iter()
                 .map(|to_cave| {
-                    let is_small = *self.small_caves.get(to_cave).unwrap();
+                    let is_small = Self::cave_is_small(to_cave);
                     let is_visisted = visited.contains(&to_cave);
                     if to_cave != &"start"
                         && (!is_small
