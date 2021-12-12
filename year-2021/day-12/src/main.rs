@@ -14,6 +14,7 @@ enum VisitLogic {
 #[derive(Debug)]
 struct CavesMap<'a> {
     map: HashMap<&'a str, Vec<&'a str>>,
+    small_caves: HashMap<&'a str, bool>,
     pathes: Vec<Vec<&'a str>>,
     visit_logic: VisitLogic,
 }
@@ -22,6 +23,7 @@ impl<'a> CavesMap<'a> {
     fn new() -> Self {
         CavesMap {
             map: HashMap::<&str, Vec<&str>>::new(),
+            small_caves: HashMap::<&str, bool>::new(),
             pathes: vec![],
             visit_logic: VisitLogic::SmallOnce,
         }
@@ -34,8 +36,18 @@ impl<'a> CavesMap<'a> {
         if !self.map.contains_key(to_cave) {
             self.map.insert(to_cave, vec![]);
         }
+        if !self.small_caves.contains_key(from_cave) {
+            self.small_caves
+                .insert(from_cave, Self::cave_is_small(from_cave));
+        }
+        if !self.small_caves.contains_key(to_cave) {
+            self.small_caves
+                .insert(to_cave, Self::cave_is_small(to_cave));
+        }
         self.map.get_mut(from_cave).unwrap().push(to_cave);
-        self.map.get_mut(to_cave).unwrap().push(from_cave);
+        if from_cave != "start" && to_cave != "end" {
+            self.map.get_mut(to_cave).unwrap().push(from_cave);
+        }
     }
 
     fn cave_is_small(cave: &str) -> bool {
@@ -54,28 +66,26 @@ impl<'a> CavesMap<'a> {
         visited: Vec<&'a str>,
         has_small_visited: bool,
     ) -> Vec<Vec<&'a str>> {
+        let mut visited = visited.clone();
+        visited.push(cave);
         if cave == "end" {
-            let mut visited = visited.clone();
-            visited.push(cave);
             vec![visited]
         } else {
             let tunnels = self.map.get(cave).unwrap().clone();
             let new_pathes = tunnels
                 .par_iter()
-                .map(|&to_cave| {
-                    let is_small = CavesMap::cave_is_small(to_cave);
-                    let is_visisted = visited.contains(&&to_cave);
-                    if to_cave != "start"
+                .map(|to_cave| {
+                    let is_small = *self.small_caves.get(to_cave).unwrap();
+                    let is_visisted = visited.contains(&to_cave);
+                    if to_cave != &"start"
                         && (!is_small
                             || !is_visisted
                             || (self.visit_logic == VisitLogic::OneSmallTwice
                                 && !has_small_visited))
                     {
-                        let mut visited = visited.clone();
-                        visited.push(cave);
                         self.find_path(
                             to_cave,
-                            visited,
+                            visited.clone(),
                             has_small_visited || (is_small && is_visisted),
                         )
                     } else {
