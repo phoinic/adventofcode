@@ -3,7 +3,7 @@ static INPUT_DATA: &str = include_str!("input.txt");
 use rayon::prelude::*;
 use regex::Regex;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
 #[derive(Debug, PartialEq)]
 enum VisitLogic {
@@ -45,26 +45,23 @@ impl<'a> CavesMap<'a> {
 
     fn build_pathes(&mut self, visit_logic: VisitLogic) {
         self.visit_logic = visit_logic;
-        let pathes = Arc::new(Mutex::new(Vec::new()));
-        self.find_path(&pathes, "start", vec![], false);
-        self.pathes = pathes.lock().unwrap().to_vec();
+        self.pathes = self.find_path("start", vec![], false);
     }
 
     fn find_path(
         &self,
-        pathes: &Arc<Mutex<Vec<Vec<&'a str>>>>,
         cave: &'a str,
         visited: Vec<&'a str>,
         has_small_visited: bool,
-    ) {
+    ) -> Vec<Vec<&'a str>> {
         if cave == "end" {
             let mut visited = visited.clone();
             visited.push(cave);
-            pathes.lock().unwrap().push(visited);
+            vec![visited]
         } else {
             let tunnels = self.map.get(cave).unwrap().clone();
-            let tunnels_iter = tunnels.par_iter();
-            let _ = tunnels_iter
+            let new_pathes = tunnels
+                .par_iter()
                 .map(|&to_cave| {
                     let is_small = CavesMap::cave_is_small(to_cave);
                     let is_visisted = visited.contains(&&to_cave);
@@ -77,15 +74,17 @@ impl<'a> CavesMap<'a> {
                         let mut visited = visited.clone();
                         visited.push(cave);
                         self.find_path(
-                            pathes,
                             to_cave,
                             visited,
                             has_small_visited || (is_small && is_visisted),
-                        );
+                        )
+                    } else {
+                        vec![]
                     }
-                    ()
                 })
+                .flatten()
                 .collect::<Vec<_>>();
+            new_pathes
         }
     }
 
@@ -104,9 +103,19 @@ fn main() {
         caves_map.add_tunnel(from_cave, to_cave);
     }
 
+    let tstamp = Instant::now();
     caves_map.build_pathes(VisitLogic::SmallOnce);
-    println!("Round 1: {}", caves_map.get_pathes().len());
+    println!(
+        "Round 1: {} ({}ms)",
+        caves_map.get_pathes().len(),
+        tstamp.elapsed().as_millis()
+    );
 
+    let tstamp = Instant::now();
     caves_map.build_pathes(VisitLogic::OneSmallTwice);
-    println!("Round 2: {}", caves_map.get_pathes().len());
+    println!(
+        "Round 2: {} ({}ms)",
+        caves_map.get_pathes().len(),
+        tstamp.elapsed().as_millis()
+    );
 }
