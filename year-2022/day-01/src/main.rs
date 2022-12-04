@@ -1,6 +1,7 @@
 static INPUT_DATA: &str = include_str!("input.txt");
 
-fn main() {
+fn read_input() -> Vec<Vec<i64>> {
+
     let mut elves: Vec<Vec<i64>> = vec![];
     let mut elf: Vec<i64> = vec![];
 
@@ -16,6 +17,13 @@ fn main() {
     if elf.len() > 0 {
         elves.push(elf);
     }
+
+    elves
+}
+
+fn main() {
+
+    let elves = read_input();
 
     println!("{:?}", elves);
 
