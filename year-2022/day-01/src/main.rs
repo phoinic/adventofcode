@@ -23,11 +23,11 @@ fn read_input() -> Vec<Vec<i64>> {
 
 fn main() {
 
-    let elves = read_input();
+    let input = read_input();
 
-    println!("{:?}", elves);
+    println!("{:?}", input);
 
-    let mut sums: Vec<i64> = elves.iter().map(|elf| elf.iter().sum()).collect::<Vec<_>>();
+    let mut sums: Vec<i64> = input.iter().map(|elf| elf.iter().sum()).collect::<Vec<_>>();
     sums.sort_by(|a, b| b.cmp(a));
 
     println!("Round 1: {}", sums[0]);
