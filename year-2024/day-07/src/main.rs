@@ -7,22 +7,26 @@ fn check_equation(
     pos: usize,
     operators: Vec<char>,
 ) -> bool {
+    let mut result = values[0];
+
+    for i in 0..operators.len() {
+        match operators[i] {
+            '+' => result += values[i + 1],
+            '*' => result *= values[i + 1],
+            '|' => {
+                let mut result_str = result.to_string();
+                result_str.push_str(values[i + 1].to_string().as_str());
+                result = str::parse::<u128>(result_str.as_str()).unwrap();
+            }
+            _ => panic!("Unknown operator"),
+        };
+    }
+
+    if result > test_value {
+        return false;
+    }
+
     if operators.len() == values.len() - 1 {
-        let mut result = values[0];
-
-        for i in 0..operators.len() {
-            match operators[i] {
-                '+' => result += values[i + 1],
-                '*' => result *= values[i + 1],
-                '|' => {
-                    let mut result_str = result.to_string();
-                    result_str.push_str(values[i + 1].to_string().as_str());
-                    result = str::parse::<u128>(result_str.as_str()).unwrap()
-                }
-                _ => panic!("Unknown operator"),
-            };
-        }
-
         return result == test_value;
     }
 
