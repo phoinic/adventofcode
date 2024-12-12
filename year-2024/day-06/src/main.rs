@@ -123,6 +123,8 @@ fn main() {
         }
     }
 
+    print_map(&map);
+
     println!("Round1: {}", round1);
     println!("Round2: {}", round2);
 }
